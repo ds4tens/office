@@ -3,6 +3,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from py_ui.MainWindow import Ui_MainWindow
 from RecordsWindow import RecordsWindow
 import os
+from window_construct import WindowConstruct
 
 import easygui
 
@@ -30,8 +31,5 @@ class MainWindow(Ui_MainWindow):
         self.verification ^= True
 
     def _show_db_window(self):
-        # TODO создать констурктор окон
-        self.new_window = QtWidgets.QMainWindow()
-        self.new_ui = RecordsWindow()
-        self.new_ui.setupUi(self.new_window)
-        self.new_window.show()
+        self.second_window = WindowConstruct(RecordsWindow)
+        self.second_window.run()
