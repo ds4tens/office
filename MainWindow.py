@@ -32,4 +32,8 @@ class MainWindow(Ui_MainWindow):
 
     def _show_db_window(self):
         self.second_window = WindowConstruct(RecordsWindow)
+        self.second_window.ui.config()
+
         self.second_window.run()
+
+
