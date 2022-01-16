@@ -45,3 +45,16 @@ class SQL:
             return 0
         else:
             return len(self.data)
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self):
+        if self.n < len(self.data):
+            result = self.data[self.n]
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
