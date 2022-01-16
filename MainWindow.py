@@ -2,9 +2,10 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 from py_ui.MainWindow import Ui_MainWindow
 from RecordsWindow import RecordsWindow
-import os
 from window_construct import WindowConstruct
+from sql import SQL
 
+import os
 import easygui
 
 
@@ -21,6 +22,23 @@ class MainWindow(Ui_MainWindow):
         self.action_path_excel.triggered.connect(lambda: self._path_to_excel_file())
         self.action_verify_data.triggered.connect(lambda: self._toggle_verification())
         self.action_show_db.triggered.connect(lambda: self._show_db_window())
+        self.pushButton.clicked.connect(lambda: self._get_data())
+
+    def fill_combobox(self):
+        data = SQL("new_file")
+        data.execute("SELECT box_id FROM test")
+
+        self.comboBox.addItems([str(i[0]) for i in data])
+
+    def mask(self):
+        self.text_accepter.validator()
+        regexp = QtCore.QRegularExpression("[0-9\\.\\0-9]{0,7}")
+        valid = QtGui.QRegularExpressionValidator(regexp)
+        self.text_accepter.setValidator(valid)
+
+
+    def _get_data(self):
+        print(self.text_accepter.text())
 
     def _path_to_excel_file(self):
         self.path = easygui.fileopenbox(msg="Choose a file", default=os.path.curdir)
@@ -35,5 +53,3 @@ class MainWindow(Ui_MainWindow):
         self.second_window.ui.config()
 
         self.second_window.run()
-
-
