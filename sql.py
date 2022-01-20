@@ -9,6 +9,13 @@ class NotCorrectPath(Exception):
     pass
 
 
+class SmallArguments(Exception):
+    """
+    Raise Custom Exception
+    """
+    pass
+
+
 class SQL:
     def __init__(self, path):
         try:
@@ -27,6 +34,12 @@ class SQL:
         self.cursor.execute(sqlquery)
         self.data = self.cursor.fetchall()
         return self.data
+
+    def insert(self, *args):
+        if len(args) != 4:
+            raise SmallArguments
+        self.cursor.execute("INSERT INTO ORDERS VALUES (?, ?, ?, ?)", args)
+        self.connection.commit()
 
     @staticmethod
     def _check_path(path):
@@ -58,3 +71,5 @@ class SQL:
         else:
             raise StopIteration
 
+    def __del__(self):
+        self.connection.close()
