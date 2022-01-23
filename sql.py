@@ -1,19 +1,7 @@
 import sqlite3
 import os
 
-
-class NotCorrectPath(Exception):
-    """
-    Raise Custom Exception for wrong path
-    """
-    pass
-
-
-class SmallArguments(Exception):
-    """
-    Raise Custom Exception
-    """
-    pass
+from CustomExceptions import NotCorrectPath, SmallArguments
 
 
 class SQL:
@@ -41,10 +29,15 @@ class SQL:
         self.cursor.execute("INSERT INTO ORDERS VALUES (?, ?, ?, ?)", args)
         self.connection.commit()
 
+    def delete_order(self, order_id):
+        self.cursor.execute("DELETE from ORDERS WHERE order_id = ?", (order_id, ))
+
+        self.connection.commit()
+
     @staticmethod
     def _check_path(path):
         if not os.path.exists(path):
-            raise NotCorrectPath
+            raise NotCorrectPath(path)
 
     def _error(self):
         # TODO функция должна вызывать окно в котором будет отобраться ошибка

@@ -3,10 +3,11 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from py_ui.MainWindow import Ui_MainWindow
 from RecordsWindow import RecordsWindow
 from ConfirmWindow import ConfirmWindow
-from window_construct import WindowConstruct
+from window_construct import WindowConstruct, ErrorWindowConstruct, Dialog, ConfirmWindow as cf
 
 from sql import SQL
 from ExcelWriter import ExcelWriter
+from CustomExceptions import PathError
 
 from itertools import groupby
 
@@ -100,7 +101,9 @@ class MainWindow(Ui_MainWindow):
         Выбор пути к файлам excel
         :return:
         """
-        self.path = easygui.fileopenbox(msg="Choose a file", default=os.path.curdir)
+        self.path = easygui.fileopenbox(msg="Choose a file", default=os.path.curdir + r'\excel\\')
+        if self.path is None:
+            raise PathError(self.path)
         if self.debug_mode == 1:
             print("NEW PATH: {}".format(self.path))
 
@@ -121,7 +124,21 @@ class MainWindow(Ui_MainWindow):
         self.second_window.run()
 
     def _write_excel(self):
-        writer = ExcelWriter('excel/new_excel.xlsx')
+        self.dialog_filename = None  # переменная для хранения имени файла созданного диалоговым окном
+        try:
+            Dialog(self)
+        except:
+            easygui.exceptionbox()
+        finally:
+            pass
+
+        if self.dialog_filename is None:
+            ErrorWindowConstruct(None, "Неверное имя файла",
+                                 "ВНИМАНИЕ\nимя файла будет установленно как default.xlsx")
+
+            self.dialog_filename = "default"
+
+        writer = ExcelWriter('excel/{}.xlsx'.format(self.dialog_filename))
         data = self.sql.execute("SELECT DISTINCT ORDERS._date, ORDERS.box_id, ORDERS.sum, ORDERS.order_id, info.name  "
                                 "FROM ORDERS inner join info on ORDERS.box_id = info.box_id  order by ORDERS._date")
 
@@ -133,19 +150,26 @@ class MainWindow(Ui_MainWindow):
         writer.commit()
 
         # TODO создать окно, что все прошло успешно
+        cf("Запись успешно совершена")
 
     def _convert_date(self):
+        """
+        Функция конвертирует формат даты полученный от виджета Qt к формату SQLite3 \n
+        :return: year-month-day
+        :rtype: str
+        """
         year = self.dateEdit.date().year()
         month = self.dateEdit.date().month()
         day = self.dateEdit.date().day()
         return "{}-{}-{}".format(year, month, day)
 
     def _open_excel(self):
-        self._path_to_excel_file()
         try:
+            self._path_to_excel_file()
             os.startfile(self.path)
-        except OSError:
-            print("Ошибка в пути/названии файла")
-
+        except OSError as oserr:
+            ErrorWindowConstruct(oserr)
+        except PathError as patherr:
+            ErrorWindowConstruct(patherr)
         finally:
             pass
